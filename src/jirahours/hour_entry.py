@@ -14,7 +14,6 @@ class HourEntry:
         hours_cell: str,
         ticket_cell: str,
         description_cell: str,
-        date_input_format: str = "%d.%m.%Y",
     ):
         # csv row number
         self.line = line
@@ -24,7 +23,9 @@ class HourEntry:
         self.ticket_cell: str = ticket_cell.strip()
         self.description_cell: str = description_cell.strip()
         # config
-        self._date_input_format = date_input_format
+        self._date_input_format = "%d.%m.%Y"
+        self._timedelta: timedelta = timedelta(hours=5, minutes=0, seconds=0)
+        self._timezone: ZoneInfo = ZoneInfo("Europe/Helsinki")
         # validate input data automatically
         self._validate()
 
@@ -39,10 +40,9 @@ class HourEntry:
         except Exception as e:
             raise CsvError(self.line, str(e))
         # add time part
-        time_component = timedelta(hours=5, minutes=0, seconds=0, milliseconds=0)
-        naive_datetime = naive_date + time_component
+        naive_datetime = naive_date + self._timedelta
         # from helsinki timezone to utc timezone
-        datetime_hki = naive_datetime.astimezone(tz=ZoneInfo("Europe/Helsinki"))
+        datetime_hki = naive_datetime.replace(tzinfo=self._timezone)
         datetime_utc = datetime_hki.astimezone(tz=ZoneInfo("UTC"))
         # mangle to target format
         datetime_str = datetime_utc.isoformat(timespec="milliseconds")
