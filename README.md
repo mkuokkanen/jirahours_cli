@@ -22,9 +22,9 @@ Basic usage is
     poetry run jirahours path/to/the_csv_file.csv
 
 Software will ask
-* host, e.g. example.atlassian.net
-* username, e.g. myemail@example.com
-* api-key, e.e. something
+* host, e.g. `example.atlassian.net`
+* username, e.g. `myemail@example.com`
+* api-key, e.g. `random_letters`
 
 Alternatively parameters can be given as env variables
 
@@ -42,10 +42,10 @@ CSV format rules:
 * Row with all cells empty are skipped
 
 Columns
-* Column 1: Date, e.g. "25.01.2024"
-* Column 2: Hours, e.g. "2,5" means two and a half hours
-* Column 3: Jira ticket, e.g. "TICKET-123"
-* Column 4: Description, e.g. "Did something"
+* Column 1: Date, e.g. `25.01.2024`
+* Column 2: Hours, e.g. `2,5` means two and a half hours
+* Column 3: Jira ticket, e.g. `TICKET-123`
+* Column 4: Description, e.g. `Did something`
 
 
 ## Code quality
