@@ -59,3 +59,13 @@ def test_hours_per_date(hour_entries: HourEntries) -> None:
     assert hour_entries.hours_per_date(date(2020, 1, 2)) == 0
     assert hour_entries.hours_per_date(date(2020, 1, 3)) == 8
     assert hour_entries.hours_per_date(date(2020, 1, 4)) == 0
+
+
+def test_tickets(hour_entries: HourEntries) -> None:
+    assert hour_entries.tickets() == ["TICKET-1", "TICKET-4"]
+
+
+def test_hours_per_ticket(hour_entries: HourEntries) -> None:
+    assert hour_entries.hours_per_ticket("TICKET-1") == 13
+    assert hour_entries.hours_per_ticket("TICKET-2") == 0
+    assert hour_entries.hours_per_ticket("TICKET-4") == 8
