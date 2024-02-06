@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "jirahours"
+version = "0.1.0"
+description = "A over-engineered python script to move hours from CSV to Jira."
+authors = ["Mikko Kuokkanen <mikko.kuokkanen@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.*"
+click = "8.1.7"
+httpx = "0.26.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "24.1.1"
+isort = "5.13.2"
+pytest = "8.0.0"
+mypy = "1.8.0"
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+strict = "True"
+
+[tool.poetry.scripts]
+jirahours = "jirahours.main:start"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
