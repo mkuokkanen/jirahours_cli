@@ -59,6 +59,9 @@ def cli(host: str, username: str, api_key: str, csvfile: Path) -> None:
     # PRINT HOURS PER DAY
     echo_hours_per_day(data)
 
+    # PRINT HOURS PER TICKET
+    echo_hours_per_ticket(data)
+
     # SEND TO JIRA
     send_to_jira(data, host, username, api_key)
 
@@ -86,6 +89,13 @@ def echo_hours_per_day(data: HourEntries) -> None:
     while d <= data.max_date():
         click.echo(f"{d}: {data.hours_per_date(d)}")
         d += timedelta(days=1)
+
+
+def echo_hours_per_ticket(data: HourEntries) -> None:
+    click.echo("")
+    click.echo("Hours per ticket")
+    for t in data.tickets():
+        click.echo(f"{t}: {data.hours_per_ticket(t)}")
 
 
 def send_to_jira(data: HourEntries, host: str, username: str, api_key: str) -> None:

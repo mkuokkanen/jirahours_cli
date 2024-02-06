@@ -26,3 +26,12 @@ class HourEntries:
     def hours_per_date(self, d: date) -> float:
         seconds = sum([e.seconds for e in self.valid_entries if e.date == d])
         return seconds / 60 / 60
+
+    def tickets(self) -> list[str]:
+        t = list(set([e.ticket for e in self.valid_entries]))
+        t.sort()
+        return t
+
+    def hours_per_ticket(self, ticket: str) -> float:
+        seconds = sum([e.seconds for e in self.valid_entries if e.ticket == ticket])
+        return seconds / 60 / 60
