@@ -4,11 +4,18 @@ import pytest
 
 from jirahours.csv_reader import read_csv
 from jirahours.errors import CsvError
-from jirahours.hour_entry import HourEntry
+from jirahours.hour_entries import HourEntries
 
 
-def test_ok_csv() -> None:
-    data: list[HourEntry] = read_csv(Path("tests/csv_files/ok.csv"))
+@pytest.fixture
+def he() -> HourEntries:
+    return HourEntries()
+
+
+def test_ok_csv(he: HourEntries) -> None:
+    read_csv(Path("tests/csv_files/ok.csv"), he)
+    data = he.entries
+
     assert len(data) == 3
 
     # row with quotes
@@ -33,13 +40,13 @@ def test_ok_csv() -> None:
     assert data[2].description_cell == "Other description with emoji without quotes 👍"
 
 
-def test_csv_file_extra_column() -> None:
+def test_csv_file_extra_column(he: HourEntries) -> None:
     with pytest.raises(CsvError) as exc_info:
-        read_csv(Path("tests/csv_files/error_extra_column.csv"))
+        read_csv(Path("tests/csv_files/error_extra_column.csv"), he)
     assert str(exc_info.value) == "csv line 2: found 5 columns instead of expected 4"
 
 
-def test_csv_partly_filled() -> None:
+def test_csv_partly_filled(he: HourEntries) -> None:
     with pytest.raises(CsvError) as exc_info:
-        read_csv(Path("tests/csv_files/error_partly_filled.csv"))
+        read_csv(Path("tests/csv_files/error_partly_filled.csv"), he)
     assert str(exc_info.value) == "csv line 1: row only partly filled"
