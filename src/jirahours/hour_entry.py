@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
 from jirahours.errors import CsvError
@@ -24,7 +24,7 @@ class HourEntry:
         self.description_cell: str = description_cell.strip()
         # config
         self._date_input_format = "%d.%m.%Y"
-        self._timedelta: timedelta = timedelta(hours=5, minutes=0, seconds=0)
+        self._time: time = time(hour=5, minute=0, second=0)
         self._timezone: ZoneInfo = ZoneInfo("Europe/Helsinki")
         # validate input data automatically
         self._validate()
@@ -33,16 +33,16 @@ class HourEntry:
         return self.date_cell == ""
 
     @property
-    def started(self) -> str:
-        # Convert the input date string to a datetime object
+    def date(self) -> date:
         try:
-            naive_date = datetime.strptime(self.date_cell, self._date_input_format)
+            return datetime.strptime(self.date_cell, self._date_input_format).date()
         except Exception as e:
             raise CsvError(self.line, str(e))
-        # add time part
-        naive_datetime = naive_date + self._timedelta
-        # from helsinki timezone to utc timezone
-        datetime_hki = naive_datetime.replace(tzinfo=self._timezone)
+
+    @property
+    def started(self) -> str:
+        # date from local tz to utc tz
+        datetime_hki = datetime.combine(self.date, self._time, tzinfo=self._timezone)
         datetime_utc = datetime_hki.astimezone(tz=ZoneInfo("UTC"))
         # mangle to target format
         datetime_str = datetime_utc.isoformat(timespec="milliseconds")

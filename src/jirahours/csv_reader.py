@@ -2,11 +2,11 @@ import csv
 from pathlib import Path
 
 from jirahours.errors import CsvError
+from jirahours.hour_entries import HourEntries
 from jirahours.hour_entry import HourEntry
 
 
-def read_csv(path: Path) -> list[HourEntry]:
-    csv_entries = []
+def read_csv(path: Path, entries: HourEntries) -> None:
     with path.open(mode="r", encoding="utf-8") as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=";", quotechar='"')
         line_counter = 0
@@ -17,8 +17,7 @@ def read_csv(path: Path) -> list[HourEntry]:
             check_all_filled_or_empty(line_counter, row)
             # To object
             ro = row_to_object(line_counter, row)
-            csv_entries.append(ro)
-    return csv_entries
+            entries.add_entry(ro)
 
 
 def check_column_count(line: int, row: list[str]) -> None:
