@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 import pytest
 
 from jirahours.errors import CsvError
@@ -8,7 +6,7 @@ from jirahours.hour_entry import HourEntry
 
 def create_hour_entry(
     line: int = 3,
-    date_cell: str = datetime.today().strftime("%d.%m.%Y"),
+    date_cell: str = "13.2.2024",
     hours_cell: str = "5",
     ticket_cell: str = "TICKET-321",
     description_cell: str = "Description about something",
@@ -25,7 +23,7 @@ def create_hour_entry(
 def test_all_fields_ok() -> None:
     h = create_hour_entry()
     assert h.line == 3
-    assert h.started == datetime.today().strftime("%Y-%m-%d") + "T03:00:00.000+0000"
+    assert h.started == "2024-02-13T03:00:00.000+0000"
     assert h.seconds == 5 * 60 * 60
     assert h.ticket == "TICKET-321"
     assert h.description == "Description about something"
@@ -37,35 +35,6 @@ def test_date_not_of_supported_format() -> None:
     assert (
         str(exc_info.value)
         == "csv line 3: time data '2024-01-01' does not match format '%d.%m.%Y'"
-    )
-
-
-def test_date_not_too_old() -> None:
-    old_date = datetime.today() - timedelta(days=59)
-    old_date_str = old_date.strftime("%d.%m.%Y")
-    iso_old_date_str = old_date.strftime("%Y-%m-%d")
-    h = create_hour_entry(date_cell=old_date_str)
-    assert h.started == iso_old_date_str + "T03:00:00.000+0000"
-
-
-def test_date_too_old() -> None:
-    old_date = datetime.today() - timedelta(days=61)
-    old_date_str = old_date.strftime("%d.%m.%Y")
-    with pytest.raises(CsvError) as exc_info:
-        _ = create_hour_entry(date_cell=old_date_str)
-    assert (
-        str(exc_info.value)
-        == f"csv line 3: date value '{old_date_str}' is more than 60 days old"
-    )
-
-
-def test_date_in_future() -> None:
-    tomorrow = datetime.today() + timedelta(days=1)
-    tomorrow_str = tomorrow.strftime("%d.%m.%Y")
-    with pytest.raises(CsvError) as exc_info:
-        _ = create_hour_entry(date_cell=tomorrow_str)
-    assert (
-        str(exc_info.value) == f"csv line 3: date value '{tomorrow_str}' is in future"
     )
 
 

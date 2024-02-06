@@ -1,5 +1,5 @@
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from jirahours.errors import CsvError
@@ -41,19 +41,13 @@ class HourEntry:
         # add time part
         time_component = timedelta(hours=5, minutes=0, seconds=0, milliseconds=0)
         naive_datetime = naive_date + time_component
-        # from local timezone to utc timezone
-        datetime_utc = naive_datetime.astimezone().astimezone(tz=ZoneInfo("utc"))
-        # CHECK not too distant past
-        if datetime_utc < datetime.now(UTC) - timedelta(days=60):
-            raise CsvError(
-                self.line, f"date value '{self.date_cell}' is more than 60 days old"
-            )
-        # CHECK not in future
-        if datetime_utc > datetime.now(UTC):
-            raise CsvError(self.line, f"date value '{self.date_cell}' is in future")
-        return datetime_utc.isoformat(timespec="milliseconds").replace(
-            "+00:00", "+0000"
-        )
+        # from helsinki timezone to utc timezone
+        datetime_hki = naive_datetime.astimezone(tz=ZoneInfo("Europe/Helsinki"))
+        datetime_utc = datetime_hki.astimezone(tz=ZoneInfo("UTC"))
+        # mangle to target format
+        datetime_str = datetime_utc.isoformat(timespec="milliseconds")
+        datetime_str = datetime_str.replace("+00:00", "+0000")
+        return datetime_str
 
     @property
     def seconds(self) -> int:
