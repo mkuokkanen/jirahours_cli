@@ -59,21 +59,8 @@ def cli(host: str, username: str, api_key: str, csvfile: Path) -> None:
     # PRINT HOURS PER DAY
     echo_hours_per_day(data)
 
-    # CONFIRM
-    click.echo("")
-    click.confirm("Do you want to send hours to Jira?", abort=True)
-
-    # SEND DATA
-    click.echo(f"Starting to send data")
-    jb = JiraBackend(host, username, api_key)
-
-    for each in data.entries:
-        if each.skip():
-            click.echo(f"{each.line}: empty row")
-            continue
-        click.echo(f"{each.line}: Sending line ")
-        r = jb.add_worklog_to_ticket(each)
-        click.echo(f"{each.line}: {r.status_code}, {r.url}, {r.text}")
+    # SEND TO JIRA
+    send_to_jira(data, host, username, api_key)
 
 
 def echo_csv_data(data: HourEntries) -> None:
@@ -99,6 +86,20 @@ def echo_hours_per_day(data: HourEntries) -> None:
     while d <= data.max_date():
         click.echo(f"{d}: {data.hours_per_date(d)}")
         d += timedelta(days=1)
+
+
+def send_to_jira(data: HourEntries, host: str, username: str, api_key: str) -> None:
+    click.echo("")
+    click.confirm("Do you want to send hours to Jira?", abort=True)
+    click.echo(f"Starting to send data")
+    jb = JiraBackend(host, username, api_key)
+    for each in data.entries:
+        if each.skip():
+            click.echo(f"{each.line}: empty row")
+            continue
+        click.echo(f"{each.line}: Sending line ")
+        r = jb.add_worklog_to_ticket(each)
+        click.echo(f"{each.line}: {r.status_code}, {r.url}, {r.text}")
 
 
 def start() -> None:
