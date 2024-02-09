@@ -22,7 +22,7 @@ jobs:
           poetry install
 
       - name: Test with pytest
-        run: poetry run pytest --junitxml=junit/test-results.xml
+        run: poetry run pytest --cov=jirahours --junitxml=junit/test-results.xml
 
       - name: Test with mypy
         run: poetry run mypy src tests
