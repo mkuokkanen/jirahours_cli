@@ -64,4 +64,4 @@ Check type declarations with mypy
 
 Check unit tests with pytest
 
-    poetry run pytest
+    poetry run pytest --cov=jirahours
