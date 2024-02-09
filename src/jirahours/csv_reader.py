@@ -7,7 +7,7 @@ from jirahours.hour_entry import HourEntry
 
 
 def read_csv(path: Path, entries: HourEntries) -> None:
-    with path.open(mode="r", encoding="utf-8") as csv_file:
+    with path.open(mode="r", encoding="utf-8-sig") as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=";", quotechar='"')
         line_counter = 0
         for row in csv_reader:
