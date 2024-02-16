@@ -38,11 +38,11 @@ def hour_entries(
     return hour_entries
 
 
-def test_entries(hour_entries: HourEntries) -> None:
+def test_length_of_entries(hour_entries: HourEntries) -> None:
     assert len(hour_entries.entries) == 4
 
 
-def test_valid_entries(hour_entries: HourEntries) -> None:
+def test_length_of_valid_entries(hour_entries: HourEntries) -> None:
     assert len(hour_entries.valid_entries) == 3
 
 
