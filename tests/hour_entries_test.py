@@ -71,7 +71,7 @@ def test_tickets(hour_entries: HourEntries) -> None:
         ("TICKET-1", 13),
         ("TICKET-2", 0),
         ("TICKET-3", 0),
-        ("TICKET-4", 9),
+        ("TICKET-4", 8),
     ],
 )
 def test_hours_per_ticket(
