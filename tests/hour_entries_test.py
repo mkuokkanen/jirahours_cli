@@ -38,11 +38,11 @@ def hour_entries(
     return hour_entries
 
 
-def test_entries(hour_entries: HourEntries) -> None:
+def test_length_of_entries(hour_entries: HourEntries) -> None:
     assert len(hour_entries.entries) == 4
 
 
-def test_valid_entries(hour_entries: HourEntries) -> None:
+def test_length_of_valid_entries(hour_entries: HourEntries) -> None:
     assert len(hour_entries.valid_entries) == 3
 
 
@@ -65,7 +65,16 @@ def test_tickets(hour_entries: HourEntries) -> None:
     assert hour_entries.tickets() == ["TICKET-1", "TICKET-4"]
 
 
-def test_hours_per_ticket(hour_entries: HourEntries) -> None:
-    assert hour_entries.hours_per_ticket("TICKET-1") == 13
-    assert hour_entries.hours_per_ticket("TICKET-2") == 0
-    assert hour_entries.hours_per_ticket("TICKET-4") == 8
+@pytest.mark.parametrize(
+    "ticket, expected_hours",
+    [
+        ("TICKET-1", 13),
+        ("TICKET-2", 0),
+        ("TICKET-3", 0),
+        ("TICKET-4", 8),
+    ],
+)
+def test_hours_per_ticket(
+    hour_entries: HourEntries, ticket: str, expected_hours: int
+) -> None:
+    assert hour_entries.hours_per_ticket(ticket) == expected_hours
