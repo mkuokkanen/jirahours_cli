@@ -23,7 +23,10 @@ def hours_per_day(data: HourEntries) -> str:
     output = ["Hours per date"]
     d = data.min_date()
     while d <= data.max_date():
-        output.append(f"{d}: {data.hours_per_date(d)}")
+        hours_str = f"{data.hours_per_date(d)}"
+        if hours_str == "0.0":
+            hours_str = "-"
+        output.append(f"{d}: {hours_str}")
         d += timedelta(days=1)
     return "\n".join(output)
 
