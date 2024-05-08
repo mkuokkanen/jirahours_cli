@@ -2,10 +2,11 @@ import re
 from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
-from jirahours.errors import CsvError
+from jirahours.exceptions import CsvError
 
 
-class HourEntry:
+class Row:
+    """Container for CSV row data."""
 
     def __init__(
         self,
@@ -22,22 +23,33 @@ class HourEntry:
         self.hours_cell: str = hours_cell.strip()
         self.ticket_cell: str = ticket_cell.strip()
         self.description_cell: str = description_cell.strip()
+
+
+class Entry:
+    """Row data interpreted for future processing."""
+
+    def __init__(self, row: Row):
+        self.row = row
         # config
         self._date_input_format = "%d.%m.%Y"
         self._time: time = time(hour=5, minute=0, second=0)
         self._timezone: ZoneInfo = ZoneInfo("Europe/Helsinki")
-        # validate input data automatically
-        self._validate()
+        # trigger validation
+        self.validate()
 
     def skip(self) -> bool:
-        return self.date_cell == ""
+        return self.row.date_cell == ""
+
+    @property
+    def line(self) -> int:
+        return self.row.line
 
     @property
     def date(self) -> date:
         try:
-            return datetime.strptime(self.date_cell, self._date_input_format).date()
+            return datetime.strptime(self.row.date_cell, self._date_input_format).date()
         except Exception as e:
-            raise CsvError(self.line, str(e))
+            raise CsvError(self.row.line, str(e))
 
     @property
     def started(self) -> str:
@@ -51,46 +63,48 @@ class HourEntry:
 
     @property
     def seconds(self) -> int:
-        hours_cell = self.hours_cell.strip()
+        hours_cell = self.row.hours_cell.strip()
         replaced_hours_str = hours_cell.replace(",", ".")
         try:
             hours = float(replaced_hours_str)
         except Exception as e:
-            raise CsvError(self.line, str(e))
+            raise CsvError(self.row.line, str(e))
         seconds = int(hours * 3600)
         # CHECK not less than 30 minutes
         if seconds < 0.5 * 60 * 60:
             raise CsvError(
-                self.line, f"hour value '{self.hours_cell}' is less than 30 minutes"
+                self.row.line,
+                f"hour value '{self.row.hours_cell}' is less than 30 minutes",
             )
         # CHECK not more than 12 hours
         if seconds > 12 * 60 * 60:
             raise CsvError(
-                self.line, f"hour value '{self.hours_cell}' is more than 12 hours"
+                self.row.line,
+                f"hour value '{self.row.hours_cell}' is more than 12 hours",
             )
         return seconds
 
     @property
     def ticket(self) -> str:
-        ticket_cell = self.ticket_cell.strip()
+        ticket_cell = self.row.ticket_cell.strip()
         # CHECK correct format
         pattern = re.compile(r"^[A-Za-z]+-\d+$")
         if not pattern.match(ticket_cell):
             raise CsvError(
-                self.line,
-                f"ticket value '{self.ticket_cell}' is not in correct format",
+                self.row.line,
+                f"ticket value '{self.row.ticket_cell}' is not in correct format",
             )
         return ticket_cell
 
     @property
     def description(self) -> str:
-        description_cell = self.description_cell.strip()
+        description_cell = self.row.description_cell.strip()
         # CHECK not empty
         if len(description_cell) == 0:
-            raise CsvError(self.line, f"description is missing")
+            raise CsvError(self.row.line, f"description is missing")
         return description_cell
 
-    def _validate(self) -> None:
+    def validate(self) -> None:
         """Validate just calls all getters, which contain checks."""
         if self.skip():
             return
@@ -98,3 +112,35 @@ class HourEntry:
         _ = self.seconds
         _ = self.ticket
         _ = self.description
+
+
+class Hours:
+    """All entries in data set and supporting functions."""
+
+    def __init__(self, entries: list[Entry]) -> None:
+        self.entries: list[Entry] = entries
+
+    @property
+    def valid_entries(self) -> list[Entry]:
+        return [e for e in self.entries if not e.skip()]
+
+    def min_date(self) -> date:
+        dates = [e.date for e in self.valid_entries]
+        return min(dates)
+
+    def max_date(self) -> date:
+        dates = [e.date for e in self.valid_entries]
+        return max(dates)
+
+    def hours_per_date(self, d: date) -> float:
+        seconds = sum([e.seconds for e in self.valid_entries if e.date == d])
+        return seconds / 60 / 60
+
+    def tickets(self) -> list[str]:
+        t = list(set([e.ticket for e in self.valid_entries]))
+        t.sort()
+        return t
+
+    def hours_per_ticket(self, ticket: str) -> float:
+        seconds = sum([e.seconds for e in self.valid_entries if e.ticket == ticket])
+        return seconds / 60 / 60

@@ -1,8 +1,7 @@
-import click
 import httpx
 from httpx import Response
 
-from jirahours.hour_entry import HourEntry
+from jirahours.model import Entry
 
 
 class JiraBackend:
@@ -10,7 +9,7 @@ class JiraBackend:
         self._host = host
         self._client = httpx.Client(auth=httpx.BasicAuth(username, api_key))
 
-    def add_worklog_to_ticket(self, hour_entry: HourEntry) -> Response:
+    def add_worklog_to_ticket(self, hour_entry: Entry) -> Response:
         url = f"https://{self._host}/rest/api/3/issue/{hour_entry.ticket}/worklog"
         headers = {"Accept": "application/json", "Content-Type": "application/json"}
         params = {"notifyUsers": False}
@@ -19,7 +18,7 @@ class JiraBackend:
         return r
 
     @staticmethod
-    def build_body(hour_entry: HourEntry) -> object:
+    def build_body(hour_entry: Entry) -> object:
         return {
             "comment": {
                 "content": [
