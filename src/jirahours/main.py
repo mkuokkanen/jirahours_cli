@@ -7,6 +7,7 @@ import click
 from jirahours.csv_reader import read_csv
 from jirahours.hour_entries import HourEntries
 from jirahours.jira_backend import JiraBackend
+from jirahours.summaries import hours_per_day, hours_per_ticket, rows
 
 
 @click.option(
@@ -53,49 +54,16 @@ def cli(host: str, username: str, api_key: str, csvfile: Path) -> None:
     click.echo(f"Reading csv file '{csvfile}'")
     read_csv(csvfile, data)
 
-    # PRINT CSV DATA
-    echo_csv_data(data)
-
-    # PRINT HOURS PER DAY
-    echo_hours_per_day(data)
-
-    # PRINT HOURS PER TICKET
-    echo_hours_per_ticket(data)
+    # PRINT SUMMARIES
+    click.echo("")
+    click.echo(rows(data))
+    click.echo("")
+    click.echo(hours_per_day(data))
+    click.echo("")
+    click.echo(hours_per_ticket(data))
 
     # SEND TO JIRA
     send_to_jira(data, host, username, api_key)
-
-
-def echo_csv_data(data: HourEntries) -> None:
-    click.echo("")
-    click.echo("Data from csv file")
-    for each in data.entries:
-        if each.skip():
-            click.echo(f"{each.line}: empty row")
-            continue
-        click.echo(
-            f"{each.line}: "
-            f"{each.started} ({each.date_cell}), "
-            f"{each.seconds} ({each.hours_cell}), "
-            f"'{each.ticket}', "
-            f"'{each.description}'"
-        )
-
-
-def echo_hours_per_day(data: HourEntries) -> None:
-    click.echo("")
-    click.echo("Hours per date")
-    d = data.min_date()
-    while d <= data.max_date():
-        click.echo(f"{d}: {data.hours_per_date(d)}")
-        d += timedelta(days=1)
-
-
-def echo_hours_per_ticket(data: HourEntries) -> None:
-    click.echo("")
-    click.echo("Hours per ticket")
-    for t in data.tickets():
-        click.echo(f"{t}: {data.hours_per_ticket(t)}")
 
 
 def send_to_jira(data: HourEntries, host: str, username: str, api_key: str) -> None:
