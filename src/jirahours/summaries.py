@@ -21,13 +21,14 @@ def rows(data: HourEntries) -> str:
 
 def hours_per_day(data: HourEntries) -> str:
     output = ["Hours per date"]
-    d = data.min_date()
-    while d <= data.max_date():
-        hours_str = f"{data.hours_per_date(d)}"
-        if hours_str == "0.0":
-            hours_str = "-"
-        output.append(f"{d}: {hours_str}")
-        d += timedelta(days=1)
+    if data.entries:
+        d = data.min_date()
+        while d <= data.max_date():
+            hours_str = f"{data.hours_per_date(d)}"
+            if hours_str == "0.0":
+                hours_str = "-"
+            output.append(f"{d}: {hours_str}")
+            d += timedelta(days=1)
     return "\n".join(output)
 
 
