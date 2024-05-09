@@ -100,13 +100,15 @@ def send_to_jira(data: Hours, host: str, username: str, api_key: str) -> None:
     click.confirm("Do you want to send hours to Jira?", abort=True)
     click.echo(f"Starting to send data")
     jb = JiraBackend(host, username, api_key)
-    for each in data.entries:
-        if each.skip():
-            click.echo(f"{each.line}: empty row")
+    for entry in data.entries:
+        if entry.skip():
+            click.echo(f"{entry.line}: empty row")
             continue
-        click.echo(f"{each.line}: Sending line ")
-        r = jb.add_worklog_to_ticket(each)
-        click.echo(f"{each.line}: {r.status_code}, {r.url}, {r.text}")
+        click.echo(f"{entry.line}: Sending line ")
+        r = jb.add_worklog_to_ticket(
+            entry.ticket, entry.started, entry.seconds, entry.description
+        )
+        click.echo(f"{entry.line}: {r.status_code}, {r.url}, {r.text}")
 
 
 def start() -> None:
