@@ -4,9 +4,10 @@ from pathlib import Path
 
 import click
 
-from jirahours.csv_reader import read_csv
-from jirahours.hour_entries import HourEntries
+from jirahours.csv_reader import csv_file_to_hours
 from jirahours.jira_backend import JiraBackend
+from jirahours.model import Hours
+from jirahours.summarizers import hours_per_day, hours_per_ticket, rows
 
 
 @click.option(
@@ -43,30 +44,26 @@ from jirahours.jira_backend import JiraBackend
 )
 @click.command()
 def cli(host: str, username: str, api_key: str, csvfile: Path) -> None:
-    """A over-engineered script to move hours from a CSV file to Jira."""
-
-    # MASTER DATA
-    data = HourEntries()
+    """An over-engineered script to move hours from a CSV file to Jira."""
 
     # READ CSV
     click.echo("")
     click.echo(f"Reading csv file '{csvfile}'")
-    read_csv(csvfile, data)
+    data = csv_file_to_hours(csvfile)
 
-    # PRINT CSV DATA
-    echo_csv_data(data)
-
-    # PRINT HOURS PER DAY
-    echo_hours_per_day(data)
-
-    # PRINT HOURS PER TICKET
-    echo_hours_per_ticket(data)
+    # PRINT SUMMARIES
+    click.echo("")
+    click.echo(rows(data))
+    click.echo("")
+    click.echo(hours_per_day(data))
+    click.echo("")
+    click.echo(hours_per_ticket(data))
 
     # SEND TO JIRA
     send_to_jira(data, host, username, api_key)
 
 
-def echo_csv_data(data: HourEntries) -> None:
+def echo_csv_data(data: Hours) -> None:
     click.echo("")
     click.echo("Data from csv file")
     for each in data.entries:
@@ -75,14 +72,14 @@ def echo_csv_data(data: HourEntries) -> None:
             continue
         click.echo(
             f"{each.line}: "
-            f"{each.started} ({each.date_cell}), "
-            f"{each.seconds} ({each.hours_cell}), "
+            f"{each.started} ({each.row.date_cell}), "
+            f"{each.seconds} ({each.row.hours_cell}), "
             f"'{each.ticket}', "
             f"'{each.description}'"
         )
 
 
-def echo_hours_per_day(data: HourEntries) -> None:
+def echo_hours_per_day(data: Hours) -> None:
     click.echo("")
     click.echo("Hours per date")
     d = data.min_date()
@@ -91,25 +88,27 @@ def echo_hours_per_day(data: HourEntries) -> None:
         d += timedelta(days=1)
 
 
-def echo_hours_per_ticket(data: HourEntries) -> None:
+def echo_hours_per_ticket(data: Hours) -> None:
     click.echo("")
     click.echo("Hours per ticket")
     for t in data.tickets():
         click.echo(f"{t}: {data.hours_per_ticket(t)}")
 
 
-def send_to_jira(data: HourEntries, host: str, username: str, api_key: str) -> None:
+def send_to_jira(data: Hours, host: str, username: str, api_key: str) -> None:
     click.echo("")
     click.confirm("Do you want to send hours to Jira?", abort=True)
     click.echo(f"Starting to send data")
     jb = JiraBackend(host, username, api_key)
-    for each in data.entries:
-        if each.skip():
-            click.echo(f"{each.line}: empty row")
+    for entry in data.entries:
+        if entry.skip():
+            click.echo(f"{entry.line}: empty row")
             continue
-        click.echo(f"{each.line}: Sending line ")
-        r = jb.add_worklog_to_ticket(each)
-        click.echo(f"{each.line}: {r.status_code}, {r.url}, {r.text}")
+        click.echo(f"{entry.line}: Sending line ")
+        r = jb.add_worklog_to_ticket(
+            entry.ticket, entry.started, entry.seconds, entry.description
+        )
+        click.echo(f"{entry.line}: {r.status_code}, {r.url}, {r.text}")
 
 
 def start() -> None:
