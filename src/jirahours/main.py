@@ -7,6 +7,7 @@ import click
 from jirahours.csv_reader import csv_file_to_hours
 from jirahours.jira_backend import JiraBackend
 from jirahours.model import Hours
+from jirahours.summarizers import hours_per_day, hours_per_ticket, rows
 
 
 @click.option(
@@ -50,14 +51,13 @@ def cli(host: str, username: str, api_key: str, csvfile: Path) -> None:
     click.echo(f"Reading csv file '{csvfile}'")
     data = csv_file_to_hours(csvfile)
 
-    # PRINT CSV DATA
-    echo_csv_data(data)
-
-    # PRINT HOURS PER DAY
-    echo_hours_per_day(data)
-
-    # PRINT HOURS PER TICKET
-    echo_hours_per_ticket(data)
+    # PRINT SUMMARIES
+    click.echo("")
+    click.echo(rows(data))
+    click.echo("")
+    click.echo(hours_per_day(data))
+    click.echo("")
+    click.echo(hours_per_ticket(data))
 
     # SEND TO JIRA
     send_to_jira(data, host, username, api_key)
