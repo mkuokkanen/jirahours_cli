@@ -60,7 +60,7 @@ Format source code imports with isort
 
 Check type declarations with mypy
 
-    poetry run mypy src tests
+    poetry run mypy
 
 Check unit tests with pytest
 

@@ -25,4 +25,4 @@ jobs:
         run: poetry run pytest --cov=jirahours --junitxml=junit/test-results.xml
 
       - name: Test with mypy
-        run: poetry run mypy src tests
+        run: poetry run mypy --junit-xml=mypy/test-results.xml

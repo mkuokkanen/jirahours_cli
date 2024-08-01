@@ -21,6 +21,8 @@ mypy = "1.11.1"
 profile = "black"
 
 [tool.mypy]
+python_version = "3.12"
+files = ["src", "tests"]
 strict = "True"
 
 [tool.poetry.scripts]
