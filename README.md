@@ -8,7 +8,7 @@ I over-engineered a python script to move hours from CSV to Jira.
 ## How to run
 
 Requirements
-* Python 3.12
+* Python 3.13
 * Poetry
 
 First setup things
