@@ -3,10 +3,12 @@
 I over-engineered a python script to move hours from CSV to Jira.
 
 
-# How to run
+# Usage instructions
+
+## How to run
 
 Requirements
-* Python 3.12
+* Python 3.13
 * Poetry
 
 First setup things
@@ -34,7 +36,7 @@ Alternatively parameters can be given as env variables
     poetry run jirahours path/to/hours.csv
 
 
-# CSV Format
+## CSV Format
 
 CSV format rules:
 * `;` is used as csv delimiter
@@ -47,6 +49,30 @@ Columns
 * Column 3: Jira ticket, e.g. `TICKET-123`
 * Column 4: Description, e.g. `Did something`
 
+
+# Development
+
+## How to run tests
+
+Check unit tests with pytest
+
+    poetry run pytest --cov=jirahours
+
+## Dependencies
+
+Python version and dependencies are managed in pyproject.toml.
+
+Lock file regeneration
+
+    poetry lock
+
+Dependency tree
+
+    poetry show --tree
+
+Outdated dependencies
+
+    poetry show --outdated
 
 ## Code quality
 
@@ -61,7 +87,3 @@ Format source code imports with isort
 Check type declarations with mypy
 
     poetry run mypy
-
-Check unit tests with pytest
-
-    poetry run pytest --cov=jirahours
