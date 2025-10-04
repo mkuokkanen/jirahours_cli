@@ -1,42 +1,47 @@
 # README
 
-I over-engineered a python script to move hours from CSV to Jira.
+An overengineered python script to move hours from CSV to Jira.
 
+## Usage Instructions
 
-# Usage instructions
+### Requirements
 
-## How to run
-
-Requirements
 * Python 3.13
 * Poetry
 
-First setup things
+### Installation
+
+First, set up project dependencies:
 
     poetry install
 
-This describes options and arguments
+### Running the Application
+
+View all available options and arguments:
 
     poetry run jirahours --help
 
-Basic usage is
+To validate the CSV file without submitting:
 
-    poetry run jirahours path/to/the_csv_file.csv
+    poetry run jirahours check path/to/the_csv_file.csv
 
-Software will ask
+To submit hours from the CSV file:
+
+    poetry run jirahours submit path/to/the_csv_file.csv
+
+The application will prompt for:
 * host, e.g. `example.atlassian.net`
 * username, e.g. `myemail@example.com`
 * api-key, e.g. `random_letters`
 
-Alternatively parameters can be given as env variables
+Alternatively, parameters can be given as env variables:
 
     JH_HOST=example.atlassian.net \
     JH_USERNAME=my.email@example.com \
     JH_API_KEY=something \
     poetry run jirahours path/to/hours.csv
 
-
-## CSV Format
+### CSV Format Specification
 
 CSV format rules:
 * `;` is used as csv delimiter
@@ -49,32 +54,15 @@ Columns
 * Column 3: Jira ticket, e.g. `TICKET-123`
 * Column 4: Description, e.g. `Did something`
 
+## Development
 
-# Development
+### Running Unit Tests
 
-## How to run tests
-
-Check unit tests with pytest
+Execute unit tests with coverage:
 
     poetry run pytest --cov=jirahours
 
-## Dependencies
-
-Python version and dependencies are managed in pyproject.toml.
-
-Lock file regeneration
-
-    poetry lock
-
-Dependency tree
-
-    poetry show --tree
-
-Outdated dependencies
-
-    poetry show --outdated
-
-## Code quality
+### Source Code Quality
 
 Format source code with black
 
@@ -87,3 +75,19 @@ Format source code imports with isort
 Check type declarations with mypy
 
     poetry run mypy
+
+### Dependency Management
+
+Python version and dependencies are managed in `pyproject.toml`.
+
+Regenerate lock file
+
+    poetry lock
+
+View dependency tree
+
+    poetry show --tree
+
+Check outdated dependencies
+
+    poetry show --outdated
