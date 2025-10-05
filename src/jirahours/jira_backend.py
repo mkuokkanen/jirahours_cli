@@ -13,12 +13,12 @@ class JiraBackend:
         url = f"https://{self._host}/rest/api/3/issue/{ticket}/worklog"
         headers = {"Accept": "application/json", "Content-Type": "application/json"}
         params = {"notifyUsers": False}
-        data = self.build_body(started, seconds, description)
+        data = self._build_body(started, seconds, description)
         r = self._client.post(url, json=data, params=params, headers=headers)
         return r
 
     @staticmethod
-    def build_body(started: str, seconds: int, description: str) -> object:
+    def _build_body(started: str, seconds: int, description: str) -> object:
         return {
             "comment": {
                 "content": [

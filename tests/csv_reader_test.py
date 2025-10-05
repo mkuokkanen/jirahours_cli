@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from jirahours.csv_reader import csv_file_to_rows
+from jirahours.csv_reader import _csv_file_to_rows
 from jirahours.exceptions import CsvError
 
 
 def test_ok_csv() -> None:
-    data = csv_file_to_rows(Path("tests/csv_files/ok.csv"))
+    data = _csv_file_to_rows(Path("tests/csv_files/ok.csv"))
     # checks
     assert len(data) == 3
     # row with quotes
@@ -31,7 +31,7 @@ def test_ok_csv() -> None:
 
 
 def test_ok_bom_csv() -> None:
-    data = csv_file_to_rows(Path("tests/csv_files/ok_bom.csv"))
+    data = _csv_file_to_rows(Path("tests/csv_files/ok_bom.csv"))
     assert len(data) == 1
     assert data[0].line == 1
     assert data[0].date_cell == "5.1.2024"
@@ -42,11 +42,11 @@ def test_ok_bom_csv() -> None:
 
 def test_csv_file_extra_column() -> None:
     with pytest.raises(CsvError) as exc_info:
-        csv_file_to_rows(Path("tests/csv_files/error_extra_column.csv"))
+        _csv_file_to_rows(Path("tests/csv_files/error_extra_column.csv"))
     assert str(exc_info.value) == "csv line 2: found 5 columns instead of expected 4"
 
 
 def test_csv_partly_filled() -> None:
     with pytest.raises(CsvError) as exc_info:
-        csv_file_to_rows(Path("tests/csv_files/error_partly_filled.csv"))
+        _csv_file_to_rows(Path("tests/csv_files/error_partly_filled.csv"))
     assert str(exc_info.value) == "csv line 1: row only partly filled"
