@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+from dotenv import load_dotenv
 
 from jirahours.csv_reader import csv_file_to_hours
 from jirahours.jira_backend import JiraBackend
@@ -34,6 +35,7 @@ def check(csvfile: Path) -> None:
 @click.option(
     "-h",
     "--host",
+    envvar="JIRA_HOST",
     prompt=True,
     type=str,
     help="Atlassian host",
@@ -41,6 +43,7 @@ def check(csvfile: Path) -> None:
 @click.option(
     "-u",
     "--username",
+    envvar="JIRA_USERNAME",
     prompt=True,
     type=str,
     help="Atlassian username",
@@ -48,6 +51,7 @@ def check(csvfile: Path) -> None:
 @click.option(
     "-p",
     "--api-key",
+    envvar="JIRA_API_KEY",
     prompt=True,
     hide_input=True,
     type=str,
@@ -100,4 +104,5 @@ def _send_to_jira(data: Hours, host: str, username: str, api_key: str) -> None:
 
 
 def start() -> None:
-    cli(auto_envvar_prefix="JH")
+    load_dotenv()
+    cli()
