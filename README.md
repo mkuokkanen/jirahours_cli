@@ -36,10 +36,12 @@ The application will prompt for:
 
 Alternatively, parameters can be given as env variables:
 
-    JH_HOST=example.atlassian.net \
-    JH_USERNAME=my.email@example.com \
-    JH_API_KEY=something \
+    JIRA_HOST=example.atlassian.net \
+    JIRA_USERNAME=my.email@example.com \
+    JIRA_API_KEY=something \
     poetry run jirahours path/to/hours.csv
+
+Environment variables can also be given in a `.env` file.
 
 ### CSV Format Specification
 
