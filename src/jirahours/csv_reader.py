@@ -6,17 +6,17 @@ from jirahours.model import Entry, Hours, Row
 
 
 def csv_file_to_hours(path: Path) -> Hours:
-    entries = csv_file_to_entries(path)
+    entries = _csv_file_to_entries(path)
     return Hours(entries)
 
 
-def csv_file_to_entries(path: Path) -> list[Entry]:
-    rows = csv_file_to_rows(path)
+def _csv_file_to_entries(path: Path) -> list[Entry]:
+    rows = _csv_file_to_rows(path)
     entries = [Entry(row) for row in rows]
     return entries
 
 
-def csv_file_to_rows(path: Path) -> list[Row]:
+def _csv_file_to_rows(path: Path) -> list[Row]:
     rows: list[Row] = []
     with path.open(mode="r", encoding="utf-8-sig") as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=";", quotechar='"')
@@ -24,22 +24,22 @@ def csv_file_to_rows(path: Path) -> list[Row]:
         for row in csv_reader:
             line_counter += 1
             # Checks
-            check_column_count(line_counter, row)
-            check_all_filled_or_empty(line_counter, row)
+            _check_column_count(line_counter, row)
+            _check_all_filled_or_empty(line_counter, row)
             # To object
-            ro = row_to_object(line_counter, row)
+            ro = _row_to_object(line_counter, row)
             rows.append(ro)
     return rows
 
 
-def check_column_count(line: int, row: list[str]) -> None:
+def _check_column_count(line: int, row: list[str]) -> None:
     """Check column count is 4"""
     columns = len(row)
     if not columns == 4:
         raise CsvError(line, f"found {columns} columns instead of expected 4")
 
 
-def check_all_filled_or_empty(line: int, row: list[str]) -> None:
+def _check_all_filled_or_empty(line: int, row: list[str]) -> None:
     """Check that row is fully empty or fully filled"""
     all_empty = all(r.strip() == "" for r in row)
     all_filled = all(r.strip() != "" for r in row)
@@ -47,7 +47,7 @@ def check_all_filled_or_empty(line: int, row: list[str]) -> None:
         raise CsvError(line, f"row only partly filled")
 
 
-def row_to_object(line_counter: int, row: list[str]) -> Row:
+def _row_to_object(line_counter: int, row: list[str]) -> Row:
     return Row(
         line=line_counter,
         date_cell=row[0],
