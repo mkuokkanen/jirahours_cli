@@ -18,7 +18,7 @@ class JiraBackend:
         return r
 
     @staticmethod
-    def _build_body(started: str, seconds: int, description: str) -> object:
+    def _build_body(started: str, seconds: int, description: str) -> dict[str, object]:
         return {
             "comment": {
                 "content": [
