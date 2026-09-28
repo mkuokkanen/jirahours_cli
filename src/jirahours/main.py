@@ -10,6 +10,7 @@ from jirahours.summarizers import hours_per_day, hours_per_ticket, rows
 
 
 @click.group()
+@click.version_option()
 def cli() -> None:
     """An overengineered script to move hours from a CSV file to Jira."""
     pass
