@@ -47,7 +47,7 @@ class Entry:
     @property
     def date(self) -> date:
         try:
-            return datetime.strptime(self.row.date_cell, self._date_input_format).date()
+            return date.strptime(self.row.date_cell, self._date_input_format)
         except Exception as e:
             raise CsvError(self.row.line, str(e))
 

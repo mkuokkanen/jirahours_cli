@@ -6,7 +6,7 @@ An overengineered python script to move hours from CSV to Jira.
 
 ### Requirements
 
-* Python 3.13
+* Python 3.14
 * Poetry
 
 ### Installation

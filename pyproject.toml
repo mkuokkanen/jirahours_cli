@@ -6,7 +6,7 @@ authors = [
     {name = "Mikko Kuokkanen", email = "mikko.kuokkanen@gmail.com"}
 ]
 readme = "README.md"
-requires-python = "==3.13.*"
+requires-python = "==3.14.*"
 dependencies = [
     "click (==8.5.0)",
     "httpx2 (==2.13.1)",
@@ -27,7 +27,7 @@ mypy = "2.3.1"
 profile = "black"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 files = ["src", "tests"]
 strict = "True"
 

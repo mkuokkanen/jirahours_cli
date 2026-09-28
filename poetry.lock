@@ -901,5 +901,5 @@ markers = {main = "sys_platform != \"emscripten\""}
 
 [metadata]
 lock-version = "2.1"
-python-versions = "==3.13.*"
-content-hash = "f32c38aab3816ee339b82d1abef39a00297a40c033fb9b1a4b18656c0bcf4c92"
+python-versions = "==3.14.*"
+content-hash = "f981653e2cb0da826576aa12a6d3966687c7fbed90a8f9431ec139247b8f2501"
