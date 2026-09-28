@@ -1,11 +1,11 @@
-import httpx
-from httpx import Response
+import httpx2
+from httpx2 import Response
 
 
 class JiraBackend:
     def __init__(self, host: str, username: str, api_key: str):
         self._host = host
-        self._client = httpx.Client(auth=httpx.BasicAuth(username, api_key))
+        self._client = httpx2.Client(auth=httpx2.BasicAuth(username, api_key))
 
     def add_worklog_to_ticket(
         self, ticket: str, started: str, seconds: int, description: str
