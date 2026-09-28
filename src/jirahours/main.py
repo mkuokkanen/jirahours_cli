@@ -25,6 +25,7 @@ def cli() -> None:
         readable=True,
         path_type=Path,
     ),
+    help="Path to the CSV file containing the hours to check.",
 )
 def check(csvfile: Path) -> None:
     """Check and display a summary of hours from the CSV file."""
@@ -66,6 +67,7 @@ def check(csvfile: Path) -> None:
         readable=True,
         path_type=Path,
     ),
+    help="Path to the CSV file containing the hours to submit.",
 )
 def submit(host: str, username: str, api_key: str, csvfile: Path) -> None:
     """Submit hours from the CSV file to Jira."""
