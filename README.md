@@ -64,6 +64,12 @@ Execute unit tests with coverage:
 
     poetry run pytest --cov=jirahours
 
+### Project quality
+
+Check pyproject.toml quality with
+
+    poetry check
+
 ### Source Code Quality
 
 Format source code with black
