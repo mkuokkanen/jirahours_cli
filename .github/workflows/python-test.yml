@@ -25,7 +25,29 @@ jobs:
           poetry install
 
       - name: Test with pytest
-        run: poetry run pytest --cov=jirahours --junitxml=junit/test-results.xml
+        run: >
+          poetry run pytest
+          --cov=jirahours
+          --junitxml=junit/test-results.xml
+          --md-report --md-report-color=never --md-report-output=pytest-report.md
+
+      - name: Add pytest report to job summary
+        if: always()
+        run: |
+          if [ -f pytest-report.md ]; then
+            cat pytest-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Test with mypy
+        if: always()
         run: poetry run mypy --junit-xml=mypy/test-results.xml
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            junit/test-results.xml
+            mypy/test-results.xml
+          if-no-files-found: ignore
