@@ -6,7 +6,7 @@ An overengineered python script to move hours from CSV to Jira.
 
 ### Requirements
 
-* Python 3.13
+* Python 3.14
 * Poetry
 
 ### Installation
@@ -63,6 +63,12 @@ Columns
 Execute unit tests with coverage:
 
     poetry run pytest --cov=jirahours
+
+### Project quality
+
+Check pyproject.toml quality with
+
+    poetry check
 
 ### Source Code Quality
 

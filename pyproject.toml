@@ -1,33 +1,36 @@
-[tool.poetry]
+[project]
 name = "jirahours"
 version = "0.1.0"
 description = "A over-engineered python script to move hours from CSV to Jira."
-authors = ["Mikko Kuokkanen <mikko.kuokkanen@gmail.com>"]
+authors = [
+    {name = "Mikko Kuokkanen", email = "mikko.kuokkanen@gmail.com"}
+]
 readme = "README.md"
+requires-python = "==3.14.*"
+dependencies = [
+    "click (==8.5.0)",
+    "httpx2 (==2.13.1)",
+    "python-dotenv (==1.2.3)"
+]
 
-[tool.poetry.dependencies]
-python = "3.13.*"
-click = "8.3.0"
-httpx = "0.28.1"
-python-dotenv = "1.1.1"
+[project.scripts]
+jirahours = "jirahours.main:start"
 
 [tool.poetry.group.dev.dependencies]
-black = "25.9.0"
-isort = "6.1.0"
-pytest = "8.4.2"
-pytest-cov = "7.0.0"
-mypy = "1.18.2"
+black = "26.5.1"
+isort = "9.0.2"
+pytest = "9.1.1"
+pytest-cov = "7.1.0"
+pytest-md-report = "0.8.0"
+mypy = "2.3.1"
 
 [tool.isort]
 profile = "black"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 files = ["src", "tests"]
 strict = "True"
-
-[tool.poetry.scripts]
-jirahours = "jirahours.main:start"
 
 [build-system]
 requires = ["poetry-core"]
