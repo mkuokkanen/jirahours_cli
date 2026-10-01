@@ -3,10 +3,9 @@ from pathlib import Path
 import click
 from dotenv import load_dotenv
 
-from jirahours.csv_reader import csv_file_to_hours
 from jirahours.jira_backend import JiraBackend
-from jirahours.model import Hours
-from jirahours.summarizers import hours_per_day, hours_per_ticket, rows
+from jirahours.timesheet import Timesheet
+from jirahours.timesheet.implementations import StdlibTimesheet
 
 
 @click.group()
@@ -76,34 +75,30 @@ def submit(host: str, username: str, api_key: str, csvfile: Path) -> None:
     _send_to_jira(data, host, username, api_key)
 
 
-def _read_and_display_csv_summary(csvfile: Path) -> Hours:
+def _read_and_display_csv_summary(csvfile: Path) -> Timesheet:
     """Read CSV file and display summary of hour data."""
     click.echo("")
     click.echo(f"Reading csv file '{csvfile}'")
-    data = csv_file_to_hours(csvfile)
+    data: Timesheet = StdlibTimesheet(csvfile)
+    # Built before echoing anything, so that a rejected file reports its error
+    # straight after the line above rather than after a stray blank line.
+    summary = data.summary()
     click.echo("")
-    click.echo(rows(data))
-    click.echo("")
-    click.echo(hours_per_day(data))
-    click.echo("")
-    click.echo(hours_per_ticket(data))
+    click.echo(summary)
     return data
 
 
-def _send_to_jira(data: Hours, host: str, username: str, api_key: str) -> None:
+def _send_to_jira(data: Timesheet, host: str, username: str, api_key: str) -> None:
     click.echo("")
     click.confirm("Do you want to send hours to Jira?", abort=True)
     click.echo(f"Starting to send data")
     jb = JiraBackend(host, username, api_key)
-    for entry in data.entries:
-        if entry.skip():
-            click.echo(f"{entry.line}: empty row")
-            continue
-        click.echo(f"{entry.line}: Sending line ")
+    for worklog in data.worklogs():
+        click.echo(f"{worklog.line}: Sending line ")
         r = jb.add_worklog_to_ticket(
-            entry.ticket, entry.started, entry.seconds, entry.description
+            worklog.ticket, worklog.started, worklog.seconds, worklog.description
         )
-        click.echo(f"{entry.line}: {r.status_code}, {r.url}, {r.text}")
+        click.echo(f"{worklog.line}: {r.status_code}, {r.url}, {r.text}")
 
 
 def start() -> None:

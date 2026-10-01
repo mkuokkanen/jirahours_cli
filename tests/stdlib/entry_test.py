@@ -1,7 +1,7 @@
 import pytest
 
-from jirahours.exceptions import CsvError
-from jirahours.model import Entry, Row
+from jirahours.timesheet.implementations.stdlib._errors import CsvError
+from jirahours.timesheet.implementations.stdlib._model import Entry, Row
 
 
 def create_entry(
