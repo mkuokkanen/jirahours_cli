@@ -1,12 +1,21 @@
+"""Data model to contain the work data from the CSV.
+
+Hours object contains data for the whole timesheet and accessors to that data.
+Hours has a list of Entries, which are CSV row data interpreted for future processing.
+Each Entry contains a single Row, which is raw CSV row data.
+"""
+
 import re
-from datetime import date, datetime, time
+from collections.abc import Callable
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from jirahours.exceptions import CsvError
+from jirahours.timesheet.base import Worklog
+from jirahours.timesheet.stdlib.errors import CsvError
 
 
 class Row:
-    """Container for CSV row data."""
+    """Container for raw CSV row data, only whitespace stripped."""
 
     def __init__(
         self,
@@ -30,11 +39,13 @@ class Entry:
 
     def __init__(self, row: Row):
         self.row = row
-        # config
+        # How the date is interpreted from CSV cell
         self._date_input_format = "%d.%m.%Y"
+        # Worklog needs a timestamp for when work started; this is its time part
         self._time: time = time(hour=5, minute=0, second=0)
+        # Timezone of the started time
         self._timezone: ZoneInfo = ZoneInfo("Europe/Helsinki")
-        # trigger validation
+        # Content checks, on top of the shape checks in parse.py
         self.validate()
 
     def skip(self) -> bool:
@@ -97,6 +108,11 @@ class Entry:
         return ticket_cell
 
     @property
+    def project(self) -> str:
+        """Ticket prefix, upper cased so that 'abc-1' and 'ABC-2' group together."""
+        return self.ticket.split("-", 1)[0].upper()
+
+    @property
     def description(self) -> str:
         description_cell = self.row.description_cell.strip()
         # CHECK not empty
@@ -115,7 +131,10 @@ class Entry:
 
 
 class Hours:
-    """All entries in data set and supporting functions."""
+    """All entries in data set and the aggregations over them.
+
+    Private to this implementation.
+    """
 
     def __init__(self, entries: list[Entry]) -> None:
         self.entries: list[Entry] = entries
@@ -124,23 +143,53 @@ class Hours:
     def valid_entries(self) -> list[Entry]:
         return [e for e in self.entries if not e.skip()]
 
-    def min_date(self) -> date:
-        dates = [e.date for e in self.valid_entries]
-        return min(dates)
+    def worklogs(self) -> list[Worklog]:
+        """Convert to the format the application shares, empty rows dropped."""
+        return [
+            Worklog(
+                line=e.line,
+                started=e.started,
+                seconds=e.seconds,
+                ticket=e.ticket,
+                description=e.description,
+            )
+            for e in self.valid_entries
+        ]
 
-    def max_date(self) -> date:
-        dates = [e.date for e in self.valid_entries]
-        return max(dates)
+    def per_day(self, fill_gaps: bool = True) -> dict[date, float]:
+        """Hours per date, ordered by date.
 
-    def hours_per_date(self, d: date) -> float:
-        seconds = sum([e.seconds for e in self.valid_entries if e.date == d])
-        return seconds / 60 / 60
+        With fill_gaps, dates inside the range that have no hours are included
+        as 0.0, so a caller can print a continuous calendar without knowing the
+        first and last date itself.
+        """
+        seconds: dict[date, int] = {}
+        for e in self.valid_entries:
+            seconds[e.date] = seconds.get(e.date, 0) + e.seconds
+        if not seconds:
+            return {}
+        if not fill_gaps:
+            return {d: s / 60 / 60 for d, s in sorted(seconds.items())}
+        filled: dict[date, float] = {}
+        d = min(seconds)
+        last = max(seconds)
+        while d <= last:
+            filled[d] = seconds.get(d, 0) / 60 / 60
+            d += timedelta(days=1)
+        return filled
 
-    def tickets(self) -> list[str]:
-        t = list(set([e.ticket for e in self.valid_entries]))
-        t.sort()
-        return t
+    def per_ticket(self) -> dict[str, float]:
+        """Hours per ticket, ordered by ticket."""
+        return self._totals(lambda e: e.ticket)
 
-    def hours_per_ticket(self, ticket: str) -> float:
-        seconds = sum([e.seconds for e in self.valid_entries if e.ticket == ticket])
-        return seconds / 60 / 60
+    def per_project(self) -> dict[str, float]:
+        """Hours per project, ordered by project."""
+        return self._totals(lambda e: e.project)
+
+    def _totals(self, key: Callable[[Entry], str]) -> dict[str, float]:
+        """Sum seconds per key, then convert once, to avoid float drift."""
+        seconds: dict[str, int] = {}
+        for e in self.valid_entries:
+            k = key(e)
+            seconds[k] = seconds.get(k, 0) + e.seconds
+        return {k: s / 60 / 60 for k, s in sorted(seconds.items())}
