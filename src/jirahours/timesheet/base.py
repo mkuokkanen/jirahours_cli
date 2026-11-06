@@ -19,7 +19,7 @@ from click import ClickException
 
 @dataclass(frozen=True)
 class Worklog:
-    """One unit of work, in the form JiraBackend needs it.
+    """One unit of work, in the form submission needs it.
 
     Shared by every implementation, so keep it to what the submission uses.
     """

@@ -2,7 +2,7 @@ import httpx2
 from httpx2 import Response
 
 
-class JiraBackend:
+class JiraSubmitter:
     def __init__(self, host: str, username: str, api_key: str):
         self._host = host
         self._client = httpx2.Client(auth=httpx2.BasicAuth(username, api_key))

@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 from dotenv import load_dotenv
 
-from jirahours.jira_backend import JiraBackend
+from jirahours.submitter.jira import JiraSubmitter
 from jirahours.timesheet.base import Timesheet
 from jirahours.timesheet.stdlib.timesheet import StdlibTimesheet
 
@@ -92,7 +92,7 @@ def _send_to_jira(data: Timesheet, host: str, username: str, api_key: str) -> No
     click.echo("")
     click.confirm("Do you want to send hours to Jira?", abort=True)
     click.echo(f"Starting to send data")
-    jb = JiraBackend(host, username, api_key)
+    jb = JiraSubmitter(host, username, api_key)
     for worklog in data.worklogs():
         click.echo(f"{worklog.line}: Sending line ")
         r = jb.add_worklog_to_ticket(
