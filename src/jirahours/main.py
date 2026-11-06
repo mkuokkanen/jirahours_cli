@@ -1,10 +1,13 @@
+from collections.abc import Sequence
+from contextlib import closing
 from pathlib import Path
 
 import click
 from dotenv import load_dotenv
 
+from jirahours.submitter.base import Submitter
 from jirahours.submitter.jira import JiraSubmitter
-from jirahours.timesheet.base import Timesheet
+from jirahours.timesheet.base import Timesheet, Worklog
 from jirahours.timesheet.stdlib.timesheet import StdlibTimesheet
 
 
@@ -92,13 +95,29 @@ def _send_to_jira(data: Timesheet, host: str, username: str, api_key: str) -> No
     click.echo("")
     click.confirm("Do you want to send hours to Jira?", abort=True)
     click.echo(f"Starting to send data")
-    jb = JiraSubmitter(host, username, api_key)
-    for worklog in data.worklogs():
+    with closing(JiraSubmitter(host, username, api_key)) as submitter:
+        _send_worklogs(data.worklogs(), submitter)
+
+
+def _send_worklogs(worklogs: Sequence[Worklog], submitter: Submitter) -> None:
+    """Send in order, stopping at the first failure.
+
+    Each result is echoed as it comes back, so an interrupted run still shows
+    what was sent.
+    """
+    sent: list[int] = []
+    for worklog in worklogs:
         click.echo(f"{worklog.line}: Sending line ")
-        r = jb.add_worklog_to_ticket(
-            worklog.ticket, worklog.started, worklog.seconds, worklog.description
-        )
-        click.echo(f"{worklog.line}: {r.status_code}, {r.url}, {r.text}")
+        submitted = submitter.add_worklog(worklog)
+        click.echo(f"{submitted.line}: {submitted.message}")
+        if not submitted.ok:
+            raise click.ClickException(
+                f"Line {submitted.line} failed. "
+                f"Lines sent: {', '.join(map(str, sent)) or 'none'}. "
+                "Remove the sent lines from the file before running again, "
+                "or they will be sent twice."
+            )
+        sent.append(submitted.line)
 
 
 def start() -> None:
