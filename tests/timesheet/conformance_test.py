@@ -4,13 +4,14 @@ The ABC barely constrains anything, so this suite is the real contract. Add an
 implementation to IMPLEMENTATIONS and either it agrees here or it fails.
 
 Deliberately loose about wording: each implementation validates the file its
-own native way, so the exact error text, the error subclass and the exact
-rendering are all its own business. What is pinned is the machine-readable
-output, and that an invalid file is rejected with a TimesheetError pointing at
-the offending line.
+own native way, so the exact error text and the error subclass are its own
+business. What is pinned is the machine-readable output, worklogs and totals,
+and that an invalid file is rejected with a TimesheetError pointing at the
+offending line.
 """
 
 from collections.abc import Callable
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -64,22 +65,91 @@ def test_leading_bom_is_ignored(implementation: TimesheetFactory) -> None:
 
 
 #
-# SUMMARY - has to say something useful, wording is the implementation's own
+# TOTALS - what the user checks before submitting, pinned exactly
 #
 
 
-def test_summary_mentions_every_ticket(implementation: TimesheetFactory) -> None:
+@pytest.fixture
+def unordered_csv(tmp_path: Path) -> Path:
+    csv_file = tmp_path / "unordered.csv"
+    csv_file.write_text(
+        "3.1.2020;8;XY-9;Other work\n"
+        "1.1.2020;6;ABC-1;Work\n"
+        "1.1.2020;1,5;ABC-2;More work\n",
+        encoding="utf-8",
+    )
+    return csv_file
+
+
+@pytest.fixture
+def mixed_case_csv(tmp_path: Path) -> Path:
+    csv_file = tmp_path / "mixed_case.csv"
+    csv_file.write_text(
+        "1.1.2020;6;abc-1;Work\n2.1.2020;2;ABC-2;More work\n", encoding="utf-8"
+    )
+    return csv_file
+
+
+def test_hours_per_day_cover_every_date_in_range(
+    implementation: TimesheetFactory,
+) -> None:
+    per_day = implementation(Path("tests/csv_files/ok.csv")).hours_per_day()
+    assert list(per_day) == [date(2024, 1, d) for d in range(2, 14)]
+    assert per_day[date(2024, 1, 2)] == 2.5
+    assert per_day[date(2024, 1, 13)] == 8.0
+    assert sum(per_day.values()) == 10.5
+
+
+def test_hours_per_day_sum_rows_and_are_ordered_by_date(
+    implementation: TimesheetFactory, unordered_csv: Path
+) -> None:
+    assert list(implementation(unordered_csv).hours_per_day().items()) == [
+        (date(2020, 1, 1), 7.5),
+        (date(2020, 1, 2), 0.0),
+        (date(2020, 1, 3), 8.0),
+    ]
+
+
+def test_hours_per_ticket(implementation: TimesheetFactory) -> None:
     sheet = implementation(Path("tests/csv_files/ok.csv"))
-    summary = sheet.summary()
-    assert "TICKET-123" in summary
-    assert "TICKET-321" in summary
+    assert sheet.hours_per_ticket() == {"TICKET-123": 2.5, "TICKET-321": 8.0}
 
 
-def test_summary_of_a_single_row_file(implementation: TimesheetFactory) -> None:
-    sheet = implementation(Path("tests/csv_files/ok_bom.csv"))
-    summary = sheet.summary()
-    assert "TICKET-123" in summary
-    assert "2.5" in summary
+def test_hours_per_ticket_are_ordered_by_ticket(
+    implementation: TimesheetFactory, unordered_csv: Path
+) -> None:
+    assert list(implementation(unordered_csv).hours_per_ticket().items()) == [
+        ("ABC-1", 6.0),
+        ("ABC-2", 1.5),
+        ("XY-9", 8.0),
+    ]
+
+
+def test_hours_per_ticket_keep_the_spelling_of_the_file(
+    implementation: TimesheetFactory, mixed_case_csv: Path
+) -> None:
+    per_ticket = implementation(mixed_case_csv).hours_per_ticket()
+    assert per_ticket == {"ABC-2": 2.0, "abc-1": 6.0}
+
+
+def test_hours_per_project(implementation: TimesheetFactory) -> None:
+    sheet = implementation(Path("tests/csv_files/ok.csv"))
+    assert sheet.hours_per_project() == {"TICKET": 10.5}
+
+
+def test_hours_per_project_sum_tickets_and_are_ordered_by_project(
+    implementation: TimesheetFactory, unordered_csv: Path
+) -> None:
+    assert list(implementation(unordered_csv).hours_per_project().items()) == [
+        ("ABC", 7.5),
+        ("XY", 8.0),
+    ]
+
+
+def test_hours_per_project_grouping_is_case_insensitive(
+    implementation: TimesheetFactory, mixed_case_csv: Path
+) -> None:
+    assert implementation(mixed_case_csv).hours_per_project() == {"ABC": 8.0}
 
 
 #
