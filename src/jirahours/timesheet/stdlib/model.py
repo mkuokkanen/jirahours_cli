@@ -120,6 +120,16 @@ class Entry:
             raise CsvError(self.row.line, f"description is missing")
         return description_cell
 
+    def worklog(self) -> Worklog:
+        """Convert to the format the application shares."""
+        return Worklog(
+            line=self.line,
+            started=self.started,
+            seconds=self.seconds,
+            ticket=self.ticket,
+            description=self.description,
+        )
+
     def validate(self) -> None:
         """Validate just calls all getters, which contain checks."""
         if self.skip():
@@ -145,16 +155,7 @@ class Hours:
 
     def worklogs(self) -> list[Worklog]:
         """Convert to the format the application shares, empty rows dropped."""
-        return [
-            Worklog(
-                line=e.line,
-                started=e.started,
-                seconds=e.seconds,
-                ticket=e.ticket,
-                description=e.description,
-            )
-            for e in self.valid_entries
-        ]
+        return [e.worklog() for e in self.valid_entries]
 
     def per_day(self, fill_gaps: bool = True) -> dict[date, float]:
         """Hours per date, ordered by date.

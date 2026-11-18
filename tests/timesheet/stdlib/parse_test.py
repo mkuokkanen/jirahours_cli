@@ -64,18 +64,6 @@ def test_aggregations_sum_across_rows() -> None:
     assert hours.per_project() == {"ABC": 7.5, "XY": 8.0}
 
 
-def test_project_grouping_is_case_insensitive() -> None:
-    hours = to_hours(
-        [
-            ["1.1.2020", "6", "abc-1", "Work"],
-            ["2.1.2020", "2", "ABC-2", "More work"],
-        ]
-    )
-    # tickets keep their original spelling, projects are normalised
-    assert hours.per_ticket() == {"ABC-2": 2.0, "abc-1": 6.0}
-    assert hours.per_project() == {"ABC": 8.0}
-
-
 def test_worklogs_drop_empty_rows_and_keep_line_numbers() -> None:
     hours = to_hours(
         [

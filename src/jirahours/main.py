@@ -9,6 +9,7 @@ from jirahours.submitter.base import Submitter
 from jirahours.submitter.jira import JiraSubmitter
 from jirahours.timesheet.base import Timesheet, Worklog
 from jirahours.timesheet.stdlib.timesheet import StdlibTimesheet
+from jirahours.visualizer import console
 
 
 @click.group()
@@ -85,7 +86,7 @@ def _read_and_display_csv_summary(csvfile: Path) -> Timesheet:
     data: Timesheet = StdlibTimesheet(csvfile)
     # Built before echoing anything, so that a rejected file reports its error
     # straight after the line above rather than after a stray blank line.
-    summary = data.summary()
+    summary = console.summary(data)
     click.echo("")
     click.echo(summary)
     return data

@@ -1,10 +1,10 @@
 import csv
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from datetime import date
 from functools import cached_property
 from pathlib import Path
 
 from jirahours.timesheet.base import Timesheet, Worklog
-from jirahours.timesheet.stdlib import display
 from jirahours.timesheet.stdlib.model import Hours
 from jirahours.timesheet.stdlib.parse import to_hours
 
@@ -25,11 +25,17 @@ class StdlibTimesheet(Timesheet):
         self._delimiter = delimiter
         self._quotechar = quotechar
 
-    def summary(self) -> str:
-        return display.summary(self._hours)
-
     def worklogs(self) -> Sequence[Worklog]:
         return self._hours.worklogs()
+
+    def hours_per_day(self) -> Mapping[date, float]:
+        return self._hours.per_day()
+
+    def hours_per_ticket(self) -> Mapping[str, float]:
+        return self._hours.per_ticket()
+
+    def hours_per_project(self) -> Mapping[str, float]:
+        return self._hours.per_project()
 
     @cached_property
     def _hours(self) -> Hours:

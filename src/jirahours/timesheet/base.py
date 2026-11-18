@@ -1,8 +1,5 @@
 """The timesheet contract every implementation shares.
 
-Implementations live in the subpackages next to this file.
-One subpackage per implementation, each subclassing Timesheet.
-
 The CSV format in the README is the specification implementations must support.
 Tests should test that the implementation reads the CSV file correctly.
 
@@ -11,8 +8,9 @@ way only.
 """
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import date
 
 from click import ClickException
 
@@ -32,15 +30,26 @@ class Worklog:
 
 
 class Timesheet(ABC):
-    """A parsed and validated timesheet, as the application needs it."""
+    """A parsed and validated timesheet, as the application needs it.
 
-    @abstractmethod
-    def summary(self) -> str:
-        """Human-readable summary of the file, for the user to check."""
+    Totals are in hours, summed over the non-empty lines, ordered by key.
+    """
 
     @abstractmethod
     def worklogs(self) -> Sequence[Worklog]:
         """The work to submit, empty rows already dropped."""
+
+    @abstractmethod
+    def hours_per_day(self) -> Mapping[date, float]:
+        """Every date from the first to the last, 0.0 for dates without work."""
+
+    @abstractmethod
+    def hours_per_ticket(self) -> Mapping[str, float]:
+        """Tickets as written in the file."""
+
+    @abstractmethod
+    def hours_per_project(self) -> Mapping[str, float]:
+        """Projects are ticket prefixes, upper cased, so 'abc-1' joins 'ABC-2'."""
 
 
 class TimesheetError(ClickException):
